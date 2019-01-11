@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: metaData_inspect_manager
+server:
+  port: 8080
+  tomcat:
+    max-http-post-size: -1
+jdbc:
+  data-source:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://cs-dsp-db-master:3306/master?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    u: cm9vdA==
+    p: c3ByaW5nbXZj
+    type: com.zaxxer.hikari.HikariDataSource
+    minimumIdle: 5
+    maximumPoolSize: 15
+    autoCommit: true
+    idleTimeout: 30000
+    poolName: DatebookHikariCP
+    maxLifetime: 1800000
+    connectionTimeout: 30000
+    connectionTestQuery: select 1
+  slave-data-source:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://cs-dsp-db-master:3306/slave?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    u: cm9vdA==
+    p: c3ByaW5nbXZj
+    type: com.zaxxer.hikari.HikariDataSource
+    minimumIdle: 5
+    maximumPoolSize: 15
+    autoCommit: true
+    idleTimeout: 30000
+    poolName: DatebookHikariCP
+    maxLifetime: 1800000
+    connectionTimeout: 30000
+    connectionTestQuery: select 1
+
+db:
+  data-source:
+    mapperLocations: classpath*:mapper/*.xml
+    typeAliasesPackage: com.zork.metaData.pojo
+dynamicDatasource:
+  defaultDataSource: metaDataSource
