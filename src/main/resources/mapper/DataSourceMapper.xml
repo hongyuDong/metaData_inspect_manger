@@ -1,0 +1,149 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zork.metaData.mapper.DbSourceConfigMapper">
+    <!--sqlserver采集表结构-->
+    <select id="getSqlServerDataTableSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        USE ${dbName}
+        SELECT
+          a.name AS tableName,
+          convert(varchar(100),isnull(g.[value],' ')) AS tableComment
+        FROM
+          sys.tables a LEFT JOIN sys.extended_properties g
+          ON (a.object_id = g.major_id AND g.minor_id = 0)
+    </select>
+    <!--sqlserver采集元数据-->
+    <select id="getSqlServerDataSource"  parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        USE ${dbName}
+        SELECT (case when a.colorder=1 then d.name else d.name end) as tableName,
+        convert(varchar(100),isnull(f.[value], ' ')) as tableComment,
+        a.name as columnName,
+        b.name as dataType,
+        COLUMNPROPERTY(a.id,a.name,'PRECISION') as dataLength,
+        isnull(COLUMNPROPERTY(a.id,a.name,'Scale'),0) as dataScale,
+        (case when a.isnullable=1 then '1'else '0' end) as nullAble,
+        convert(varchar(100),isnull(g.[value], ' ')) AS fieldCmt
+        FROM  syscolumns a
+        left join systypes b on a.xtype=b.xusertype
+        inner join sysobjects d on a.id=d.id and d.xtype='U' and d.name &lt;>'dtproperties'
+        left join syscomments e on a.cdefault=e.id
+        left join sys.extended_properties g on a.id=g.major_id AND a.colid=g.minor_id
+        left join sys.extended_properties f on d.id=f.class and f.minor_id=0
+        where b.name is not null
+        --WHERE d.name='要查询的表' --如果只查询指定表,加上此条件
+        order by a.id,a.colorder
+  </select>
+    <!--oracle采集表结构-->
+    <select id="getOracleDataTableSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        select TABLE_NAME  AS  "tableName",
+         COMMENTS AS "tableComment"
+         from user_tab_comments
+    <!--  SELECT
+        TABLE_NAME AS "tableName",
+        '' AS "tableComment"
+        FROM V_selectdatatable
+        <if test="dbName != null" >
+            WHERE OWNER = #{dbName}
+        </if>-->
+    </select>
+    <!--oracle采集元数据-->
+    <select id="getOracleDataSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        <!--create OR REPLACE view  V_selectdatameta
+   AS
+     select
+            T.OWNER,
+            T.TABLE_NAME ,
+            U.COLUMN_NAME,
+            U.DATA_TYPE ,
+             U.CHAR_LENGTH,
+             U.DATA_PRECISION,
+              U.DATA_SCALE ,
+           U.NULLABLE ,
+            C.comments
+            from dba_tables T,dba_tab_columns U,dba_col_comments C  where  T.table_name = U.TABLE_NAME
+            and U.table_name = C.table_name
+            and U.COLUMN_NAME = C.column_name
+
+      create OR REPLACE view  V_selectdatatable
+      AS
+            select
+            OWNER,
+            TABLE_NAME
+         from dba_tables -->
+        select
+             T.TABLE_NAME ,
+             S.COMMENTS ,
+             U.COLUMN_NAME,
+             U.DATA_TYPE ,
+             case U.CHAR_LENGTH when 0 then U.DATA_PRECISION else U.CHAR_LENGTH end ,
+             case U.CHAR_LENGTH when 0 then U.DATA_SCALE else 0 end ,
+             case U.NULLABLE when 'Y' then 1 else 0 end ,
+             C.comments
+             from user_tables T , user_tab_comments S,user_tab_columns U ,user_col_comments C  where  T.table_name = U.TABLE_NAME
+             and T.table_name = S.table_name
+             and U.table_name = C.table_name
+             and U.COLUMN_NAME = C.column_name
+    <!--  SELECT
+        TABLE_NAME AS "tableName",
+        '' AS "tableComment",
+        COLUMN_NAME AS "columnName",
+        DATA_TYPE AS "dataType",
+        case CHAR_LENGTH when 0 then DATA_PRECISION else CHAR_LENGTH end AS "dataLength",
+        case CHAR_LENGTH when 0 then DATA_SCALE else 0 end AS "dataScale",
+        case NULLABLE when 'Y' then 1 else 0 end AS "nullAble",
+        '' AS "fieldCmt"
+        FROM V_selectdatameta
+        <if test="dbName != null" >
+            WHERE OWNER = #{dbName}
+        </if> -->
+    </select>
+    <!--mysql采集表结构-->
+    <select id="getMysqlDataTableSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        SELECT t.TABLE_NAME AS tableName,
+        t.TABLE_COMMENT AS tableComment
+        FROM   information_schema.tables t
+        WHERE  t.TABLE_SCHEMA = #{dbName}
+    </select>
+    <!--mysql采集元数据-->
+    <select id="getMysqlDataSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        SELECT t.TABLE_NAME AS tableName,
+        t.COLUMN_NAME AS columnName,
+        t.DATA_TYPE AS dataType,
+        t.NUMERIC_PRECISION AS dataLength,
+        t.NUMERIC_SCALE AS dataScale,
+        CASE t.IS_NULLABLE WHEN 'YES' then 1 else 0 end AS nullAble,
+        t.COLUMN_COMMENT AS fieldCmt
+        FROM information_schema.`COLUMNS` t
+        where
+        t.TABLE_SCHEMA = #{dbName}
+    </select>
+    <!--sybase采集表结构-->
+    <select id="getSybaseDataTableSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        SELECT s.name AS tableName
+        FROM   sysobjects s
+        where s.type = 'U' order by name
+    </select>
+    <!--sybase采集元数据-->
+    <select id="getSybaseDataSource" parameterType="com.zork.metaData.pojo.DbSourceConfig" resultType="map">
+        /*  SELECT s.name AS tableName,
+        isnull(c.name, 'NULL') AS columnName,
+        t.name AS dataType,
+        c.length AS dataLength,
+        c.scale AS dataScale,
+        CASE c.status WHEN 8 then '1' else '0' end AS nullAble
+        FROM sysobjects s,syscolumns c,systypes t
+        where s.id *= c.id and  c.usertype *= t.usertype
+        and s.type = 'U' order by name*/
+        SELECT t.table_name AS tableName,
+        c.column_name AS columnName,
+        d.domain_name AS dataType,
+        c.width AS dataLength,
+        c.scale AS dataScale,
+        case c.nulls when 'Y' then 1 else 0 end AS nullAble
+        FROM sysobjects s,systable t,syscolumn c,sysdomain d
+        WHERE s.id = t.object_id
+        and t.table_id = c.table_id
+        and c.domain_id = d.domain_id
+        and s.type = 'U'
+    </select>
+
+</mapper>

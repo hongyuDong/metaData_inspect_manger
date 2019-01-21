@@ -10,7 +10,10 @@ final class DataSourceBean {
     private final String url;
     private final String username;
     private final String password;
-    private final String validationQuery;
+    private final String connectionTestQuery;
+    private final String maximumPoolSize;
+    private final String idleTimeout;
+    private final String connectionTimeout;
     private final boolean testOnBorrow;
 
     public DataSourceBean(DataSourceBeanBuilder beanBuilder) {
@@ -20,7 +23,10 @@ final class DataSourceBean {
         this.password = beanBuilder.getPassword();
         this.testOnBorrow = beanBuilder.isTestOnBorrow();
         this.username = beanBuilder.getUsername();
-        this.validationQuery = beanBuilder.getValidationQuery();
+        this.connectionTestQuery = beanBuilder.getValidationQuery();
+        this.maximumPoolSize = "20";
+        this.idleTimeout = "30000";
+        this.connectionTimeout="30000";
     }
 
     public String getBeanName() {
@@ -44,7 +50,7 @@ final class DataSourceBean {
     }
 
     public String getValidationQuery() {
-        return validationQuery;
+        return connectionTestQuery;
     }
 
     public boolean isTestOnBorrow() {
@@ -54,6 +60,6 @@ final class DataSourceBean {
 
     @Override
     public String toString() {
-        return "DataSourceBean{" + "driverClassName='" + driverClassName + '\'' + ", url='" + url + '\'' + ", username='" + username + '\'' + ", password='" + password + '\'' + ", validationQuery='" + validationQuery + '\'' + ", testOnBorrow=" + testOnBorrow + '}';
+        return "DataSourceBean{" + "driverClassName='" + driverClassName + '\'' + ", url='" + url + '\'' + ", username='" + username + '\'' + ", password='" + password + '\'' + ", validationQuery='" + connectionTestQuery + '\'' + ", testOnBorrow=" + testOnBorrow + '}';
     }
 }

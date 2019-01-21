@@ -285,6 +285,8 @@ public class DBUtil {
             /**获取数据库连接池中的连接**/
             connection = DbConnection.getConnection();
             preparedStatement = connection.prepareStatement(sql);
+            /** 设置流式读取 **/
+            preparedStatement.setFetchSize(Integer.MIN_VALUE);
             if (bindArgs != null) {
                 /**设置sql占位符中的值**/
                 for (int i = 0; i < bindArgs.length; i++) {
