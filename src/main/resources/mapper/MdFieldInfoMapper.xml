@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zork.security.metaData.MdFieldInfoMapper">
+    <resultMap id="BaseResultMap" type="com.zork.metaData.pojo.MdFieldInfo">
+        <id column="ID" jdbcType="NUMERIC" property="id" />
+        <result column="TABLE_ID" jdbcType="DECIMAL" property="tableId" />
+        <result column="COLUMN_NAME" jdbcType="VARCHAR" property="columnName" />
+        <result column="DATA_TYPE" jdbcType="VARCHAR" property="dataType" />
+        <result column="DATA_LENGTH" jdbcType="DECIMAL" property="dataLength" />
+        <result column="NULLABLE" jdbcType="VARCHAR" property="nullable" />
+        <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+        <result column="LAST_DATE" jdbcType="TIMESTAMP" property="lastDate" />
+        <result column="FIELD_CMT" jdbcType="VARCHAR" property="fieldCmt" />
+        <result column="DATA_SCALE" jdbcType="DECIMAL" property="dataScale" />
+        <result column="DATA_KEY" jdbcType="VARCHAR" property="dataKey" />
+    </resultMap>
+    <sql id="Filed_Column_List" >
+        TABLE_ID,COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE, CREATE_DATE, FIELD_CMT,DATA_SCALE,DATA_KEY
+    </sql>
+
+    <select id="selMdFiledInfoList" resultType="map" parameterType="java.lang.String">
+        select
+        f.id AS "id",
+        f.TABLE_ID AS "tableId",
+        t.TABLE_NAME AS "tableName",
+        t.TABLE_CMT AS "tableCmt",
+        f.COLUMN_NAME AS "columnName",
+        f.DATA_TYPE AS "dataType",
+        f.DATA_LENGTH AS "dataLength",
+        f.NULLABLE AS "nullable",
+        DATE_FORMAT(f.CREATE_DATE,'%Y-%m-%d %H:%i:%s') AS "createDate" ,
+        f.FIELD_CMT AS "fieldCmt",
+        f.DATA_SCALE AS "dataScale",
+        f.DATA_KEY AS "dataKey"
+        FROM MD_FIELD_INFO f
+        LEFT JOIN MD_TABLE_INFO t
+        on f.TABLE_ID = t.ID
+        where t.DB_ID = #{id}
+        and t.CREATE_DATE = (select MAX(CREATE_DATE)  FROM MD_TABLE_INFO WHERE DB_ID = #{id})
+    </select>
+    <!-- 录入元数据(当记录数大于11条时删除第一条记录) -->
+    <insert id="addMdFiledInfo"  parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+
+        <foreach collection="list" item="item" index="index" separator=";">
+        insert  into MD_FIELD_INFO
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="item.id != null">
+                TABLE_ID,
+            </if>
+            <if test="item.columnName != null">
+                COLUMN_NAME,
+            </if>
+            <if test="item.dataType != null">
+                DATA_TYPE,
+            </if>
+            <if test="item.dataLength != null">
+                DATA_LENGTH,
+            </if>
+            <if test="item.nullAble != null">
+                NULLABLE,
+            </if>
+            <if test="item.createDate != null">
+                CREATE_DATE,
+            </if>
+            <if test="item.fieldCmt != null">
+                FIELD_CMT,
+            </if>
+            <if test="item.dataScale != null">
+                DATA_SCALE,
+            </if>
+            <if test="item.dataKey != null">
+                DATA_KEY,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="item.id != null">
+                #{item.id,jdbcType=NUMERIC},
+            </if>
+            <if test="item.columnName != null">
+                #{item.columnName,jdbcType=VARCHAR},
+            </if>
+            <if test="item.dataType != null">
+                #{item.dataType,jdbcType=VARCHAR},
+            </if>
+            <if test="item.dataLength != null">
+                #{item.dataLength,jdbcType=NUMERIC},
+            </if>
+            <if test="item.nullAble != null">
+                #{item.nullAble,jdbcType=VARCHAR},
+            </if>
+            <if test="item.createDate != null">
+                #{item.createDate,jdbcType=VARCHAR},
+            </if>
+            <if test="item.fieldCmt != null">
+                #{item.fieldCmt,jdbcType=VARCHAR},
+            </if>
+            <if test="item.dataScale != null">
+                #{item.dataScale,jdbcType=NUMERIC},
+            </if>
+            <if test="item.dataKey != null">
+                #{item.dataKey,jdbcType=VARCHAR}
+            </if>
+        </trim>
+        </foreach>
+    </insert>
+
+    <update id="updMdFiledInfo"  parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" separator=";">
+        UPDATE MD_FIELD_INFO
+        <set>
+            <if test="item.columnName != null">
+                COLUMN_NAME =  #{item.columnName,jdbcType=VARCHAR},
+            </if>
+            <if test="item.dataType != null">
+                DATA_TYPE =  #{item.dataType,jdbcType=VARCHAR},
+            </if>
+            <if test="item.dataLength != null">
+                DATA_LENGTH = #{item.dataLength,jdbcType=NUMERIC},
+            </if>
+            <if test="item.nullAble != null">
+                NULLABLE = #{item.nullAble,jdbcType=VARCHAR},
+            </if>
+            <if test="item.lastDate != null">
+                LAST_DATE = #{item.lastDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="item.fieldCmt != null">
+                FIELD_CMT = #{item.fieldCmt,jdbcType=VARCHAR},
+            </if>
+            <if test="item.dataScale != null">
+                DATA_SCALE = #{item.dataScale,jdbcType=NUMERIC},
+            </if>
+            <if test="item.dataKey != null">
+                DATA_KEY = #{item.dataKey,jdbcType=VARCHAR}
+            </if>
+        </set>
+            WHERE ID = #{item.id,jdbcType=NUMERIC}
+        </foreach>
+    </update>
+    <select id="queryMdField"  resultType="map" parameterType="java.lang.String">
+      select id,column_name,data_type,data_length,nullable,field_cmt,data_key from MD_FIELD_INFO
+      where table_id = #{id}
+    </select>
+   <!-- &lt;!&ndash; 调用存储过程，其中CALLABLE是执行存储过程和函数的&ndash;&gt;
+    <select id="callInsertMdFiledInfo" parameterType="java.lang.String" statementType="CALLABLE">
+        call insertMdFieldInfo(
+        #{id,mode=IN,jdbcType=NUMERIC}
+        )
+    </select>-->
+
+    <select id="queryMdFields" resultType="map" parameterType="java.util.Map">
+        SELECT COLUMN_NAME FROM MD_FIELD_INFO WHERE TABLE_ID = (
+        select id from MD_TABLE_INFO
+        where db_id = (select id from MD_DB_INFO where ds_id = #{id}) AND TABLE_NAME = #{tableName}
+        )
+    </select>
+    <!-- 获取字段信息-->
+    <select id="selMdFieldCollect" resultType="map">
+      select f.id AS "id",
+      t.table_name AS "tableName",
+      f.column_name AS "columnName"
+      from MD_FIELD_INFO f RIGHT JOIN
+    (SELECT id,table_name from MD_TABLE_INFO
+    WHERE  1 = 1
+    <if test="tableNames != null and tableNames.size > 0">
+      AND table_name in
+        <foreach collection="tableNames" open="(" close = ")" item = "table" separator=",">
+            #{table}
+        </foreach>
+    </if>
+    AND db_id = #{dbId}) t on f.table_id = t.id
+    where f.id is not null
+    </select>
+    <delete id="delMdFiledInfo" parameterType="map">
+        delete from MD_FIELD_INFO where id in
+        (
+        select id from
+        (select id  from MD_FIELD_INFO where table_id in
+        (select id from MD_TABLE_INFO where table_name = #{tableName} and db_id = #{dbId})
+        and column_name =  #{columnName}) AS TEMP
+        )
+    </delete>
+</mapper>

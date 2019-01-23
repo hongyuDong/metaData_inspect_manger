@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zork.metaData.mapper.MdDbInfoMapper">
+    <resultMap id="BaseResultMap" type="com.zork.metaData.pojo.MdDbInfo">
+        <id column="ID" jdbcType="NUMERIC" property="id" />
+        <result column="PRODUCT" jdbcType="VARCHAR" property="product" />
+        <result column="DB_VERSION" jdbcType="VARCHAR" property="dbVersion" />
+        <result column="DS_ID" jdbcType="VARCHAR" property="dsId" />
+        <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+        <result column="LAST_DATE" jdbcType="TIMESTAMP" property="lastDate" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        ID, PRODUCT, DB_VERSION,  DS_ID, CREATE_DATE, LAST_DATE, BATCH_ID
+    </sql>
+    <select id="selMdDbInfoList"  resultType="map" parameterType="com.zork.metaData.pojo.MdDbInfo">
+        select
+        <include refid="Base_Column_List" />
+        from MD_DB_INFO
+        where ID = #{id,jdbcType=DECIMAL}
+    </select>
+    <!--查询是否有采集记录 -->
+    <select id="isCollectMdDbInfo"  resultType="map" parameterType="java.lang.String">
+        select
+        ID,
+        DS_ID
+        from MD_DB_INFO
+        where DS_ID = #{id}
+    </select>
+    <insert id="addMdDbInfo" parameterType="com.zork.metaData.pojo.MdDbInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into MD_DB_INFO (PRODUCT, DB_VERSION,
+        DS_ID, CREATE_DATE)
+        values ( #{product,jdbcType=NUMERIC}, #{dbVersion,jdbcType=VARCHAR},
+        #{dsId,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP})
+    </insert>
+    <update id="updateMdDbInfo" parameterType="java.lang.String">
+        update MD_DB_INFO SET last_date = DATE_ADD(sysdate(),INTERVAL 8 hour) where ds_id = #{id}
+    </update>
+    <delete id="delMdDbInfo" parameterType="java.lang.String">
+        DELETE FROM MD_FIELD_INFO WHERE table_id in (SELECT id FROM MD_TABLE_INFO WHERE db_id = (SELECT id FROM MD_DB_INFO WHERE ds_id = #{id}));
+        DELETE FROM MD_TABLE_INFO WHERE db_id = (SELECT id FROM MD_DB_INFO WHERE ds_id = #{id});
+        DELETE FROM MD_DB_INFO WHERE ds_id = #{id}
+    </delete>
+</mapper>

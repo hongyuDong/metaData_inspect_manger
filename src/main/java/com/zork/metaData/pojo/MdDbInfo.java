@@ -1,24 +1,25 @@
-package com.sample;
+package com.zork.metaData.pojo;
 
+
+import java.util.Date;
 
 public class MdDbInfo {
 
-  private long id;
+  private Long id;
   private String product;
   private String dbVersion;
   private String dsId;
-  private java.sql.Timestamp createDate;
-  private java.sql.Timestamp lastDate;
+  private Date createDate;
+  private Date lastDate;
+  private String status;
 
-
-  public long getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(long id) {
+  public void setId(Long id) {
     this.id = id;
   }
-
 
   public String getProduct() {
     return product;
@@ -46,22 +47,27 @@ public class MdDbInfo {
     this.dsId = dsId;
   }
 
-
-  public java.sql.Timestamp getCreateDate() {
+  public Date getCreateDate() {
     return createDate;
   }
 
-  public void setCreateDate(java.sql.Timestamp createDate) {
+  public void setCreateDate(Date createDate) {
     this.createDate = createDate;
   }
 
-
-  public java.sql.Timestamp getLastDate() {
+  public Date getLastDate() {
     return lastDate;
   }
 
-  public void setLastDate(java.sql.Timestamp lastDate) {
+  public void setLastDate(Date lastDate) {
     this.lastDate = lastDate;
   }
 
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
 }

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zork.metaData.mapper.MdTableInfoMapper">
+    <resultMap id="BaseResultMap" type="com.zork.metaData.pojo.MdTableInfo">
+        <id column="ID" jdbcType="NUMERIC" property="id" />
+        <result column="DB_ID" jdbcType="DECIMAL" property="dbId" />
+        <result column="TABLE_NAME" jdbcType="VARCHAR" property="tableName" />
+        <result column="TABLE_SPACENAME" jdbcType="VARCHAR" property="tableSpacename" />
+        <result column="INITIAL_EXTEND" jdbcType="VARCHAR" property="initialExtend" />
+        <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+        <result column="LAST_DATE" jdbcType="TIMESTAMP" property="lastDate" />
+        <result column="TABLE_CMT" jdbcType="VARCHAR" property="tableCmt" />
+    </resultMap>
+    <sql id="Base_Column_List" >
+        ID,DB_ID, TABLE_NAME, CREATE_DATE, TABLE_CMT, BATCH_ID
+    </sql>
+    <!--查询元数据表信息-->
+    <select id="selMdTableInfoList" resultType="map" parameterType="java.lang.String">
+        SELECT
+        ID  AS "id",
+        TABLE_NAME  AS  "tableName"
+        FROM  MD_TABLE_INFO
+        WHERE db_id = #{id}
+        AND CREATE_DATE = (SELECT MAX(create_date) FROM MD_TABLE_INFO WHERE db_id = #{id})
+    </select>
+    <!-- 插入元数据表信息 -->
+    <insert id="addMdTableInfo"  parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+         insert into MD_TABLE_INFO (DB_ID,TABLE_NAME,CREATE_DATE,TABLE_CMT)
+         values
+        <foreach collection="list" item="item" index="index" separator=",">
+            ( #{item.id,jdbcType=NUMERIC},
+            #{item.tableName,jdbcType=VARCHAR},
+            #{item.createDate,jdbcType=TIMESTAMP},
+            #{item.tableCmt,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+    <select id="queryMdTable" resultType="map" parameterType="java.lang.String">
+        select id,table_name from MD_TABLE_INFO
+        where db_id = (select id from MD_DB_INFO where ds_id = #{id})
+    </select>
+    <select id="selMdTableName" resultType="java.lang.String" parameterType="java.lang.String">
+        select table_name from MD_TABLE_INFO
+        where db_id = #{dsId}
+    </select>
+    <!--删除采集中表的数据-->
+    <delete id="delMdTable">
+        DELETE FROM MD_FIELD_INFO
+        WHERE table_id IN
+        (select id  from MD_TABLE_INFO
+        WHERE 1 = 1
+        <if test="tableNames != null and tableNames.size > 0">
+          AND TABLE_NAME in
+            <foreach collection="tableNames" open="(" close = ")" item = "table" separator=",">
+               #{table}
+            </foreach>
+        </if>
+          AND db_id = #{dbId});
+
+        DELETE FROM MD_TABLE_INFO
+        WHERE  1 = 1
+        <if test="tableNames != null and tableNames.size > 0">
+          AND TABLE_NAME IN
+            <foreach collection="tableNames" open="(" close = ")" item = "table" separator=",">
+                #{table}
+            </foreach>
+        </if>
+        AND db_id = #{dbId};
+    </delete>
+
+    <!-- 获取字段信息-->
+    <select id="selMdTableCollect" resultType="map">
+        select f.id AS "id",
+        f.table_name AS "tableName"
+        from MD_TABLE_INFO f
+        WHERE  1 = 1
+        <if test="tableNames != null and tableNames.size > 0">
+            AND f.table_name in
+            <foreach collection="tableNames" open="(" close = ")" item = "table" separator=",">
+                #{table}
+            </foreach>
+        </if>
+        AND db_id = #{dbId}
+    </select>
+</mapper>

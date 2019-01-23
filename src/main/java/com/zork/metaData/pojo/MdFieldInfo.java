@@ -1,5 +1,7 @@
-package com.sample;
+package com.zork.metaData.pojo;
 
+
+import java.util.Date;
 
 public class MdFieldInfo {
 
@@ -9,8 +11,8 @@ public class MdFieldInfo {
   private String dataType;
   private long dataLength;
   private String nullable;
-  private java.sql.Timestamp createDate;
-  private java.sql.Timestamp lastDate;
+  private Date createDate;
+  private Date lastDate;
   private String fieldCmt;
   private double dataScale;
   private String dataKey;
@@ -71,24 +73,21 @@ public class MdFieldInfo {
     this.nullable = nullable;
   }
 
-
-  public java.sql.Timestamp getCreateDate() {
+  public Date getCreateDate() {
     return createDate;
   }
 
-  public void setCreateDate(java.sql.Timestamp createDate) {
+  public void setCreateDate(Date createDate) {
     this.createDate = createDate;
   }
 
-
-  public java.sql.Timestamp getLastDate() {
+  public Date getLastDate() {
     return lastDate;
   }
 
-  public void setLastDate(java.sql.Timestamp lastDate) {
+  public void setLastDate(Date lastDate) {
     this.lastDate = lastDate;
   }
-
 
   public String getFieldCmt() {
     return fieldCmt;
